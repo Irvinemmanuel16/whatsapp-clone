@@ -8,7 +8,7 @@ import AttachFileIcon from '@material-ui/icons/AttachFile';
 import { useCollection } from 'react-firebase-hooks/firestore';
 import InsertEmoticonIcon from '@material-ui/icons/InsertEmoticon';
 import MicIcon from '@material-ui/icons/Mic';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import firebase from 'firebase';
 import Message from './Message';
 import getRecipientEmail from '../utils/getRecipientEmail';
@@ -17,6 +17,7 @@ import TimeAgo from 'timeago-react';
 export default function ChatScreen({ chat, messages }) {
   const [user] = useAuthState(auth);
   const [input, setInput] = useState('');
+  const endOfMessagesRef = useRef();
   const router = useRouter();
   const recipientEmail = getRecipientEmail(chat.users, user);
   const [messagesSnapshot] = useCollection(
@@ -32,6 +33,13 @@ export default function ChatScreen({ chat, messages }) {
   );
 
   const recipient = recipientSnapshot?.docs?.[0]?.data();
+
+  const scrollToBottom = () => {
+    endOfMessagesRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  };
 
   const sendMessage = e => {
     e.preventDefault();
@@ -49,6 +57,7 @@ export default function ChatScreen({ chat, messages }) {
       photoURL: user.photoURL,
     });
     setInput('');
+    scrollToBottom();
   };
 
   const showMessages = () => {
@@ -100,7 +109,7 @@ export default function ChatScreen({ chat, messages }) {
       </Header>
       <MessageContainer>
         {showMessages()}
-        <EndOfMessage />
+        <EndOfMessage ref={endOfMessagesRef} />
       </MessageContainer>
       <InputContainer>
         <InsertEmoticonIcon />
